@@ -7,7 +7,7 @@ from jsonschema import validate, ValidationError
 
 from . import models
 from . import decorators
-from tuneful import app
+from . import app
 from .database import session
 from .utils import upload_path
 
