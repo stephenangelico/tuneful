@@ -48,4 +48,60 @@ class TestAPI(unittest.TestCase):
 		
 		data = json.loads(response.data.decode("ascii"))
 		self.assertEqual(data, [])
-
+	
+	def test_new_song(self):
+		""" Add a song to the database """
+		testfile = File(name="chords.wav")
+		session.add(testfile)
+		session.commit()
+				
+		data = {
+			"file": {
+				"id": 1
+			}
+		}
+		
+		response = self.client.post("/api/songs",
+			data=json.dumps(data),
+			content_type="application/json",
+			headers=[("Accept", "application/json")]
+		)
+		
+		self.assertEqual(response.status_code, 201)
+		self.assertEqual(response.mimetype, "application/json")
+		
+		data = json.loads(response.data.decode("ascii"))
+		self.assertEqual(data[0]["id"], 1)
+		self.assertEqual(data[0]["file"]["id"], 1)
+		self.assertEqual(data[0]["file"]["name"], "chords.wav")
+	
+	def test_invalid_song(self):
+		""" Attempt to add a song without a name """
+		data = {}
+		
+		response = self.client.post("/api/songs",
+			data=json.dumps(data),
+			content_type="application/json",
+			headers=[("Accept", "application/json")]
+		)
+		
+		self.assertEqual(response.status_code, 422)
+		self.assertEqual(response.mimetype, "application/json")
+		
+		data = json.loads(response.data.decode("ascii"))
+		self.assertEqual(data["message"], "'file' is a required property")
+		
+		data = {"file": {}}
+		
+		response = self.client.post("/api/songs",
+			data=json.dumps(data),
+			content_type="application/json",
+			headers=[("Accept", "application/json")]
+		)
+		
+		self.assertEqual(response.status_code, 422)
+		self.assertEqual(response.mimetype, "application/json")
+		
+		data = json.loads(response.data.decode("ascii"))
+		self.assertEqual(data["message"], "'id' is a required property")
+	
