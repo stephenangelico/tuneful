@@ -150,3 +150,13 @@ class TestAPI(unittest.TestCase):
 		data = json.loads(response.data.decode("ascii"))
 		self.assertEqual(data["message"], "Song #1 deleted")
 	
+	def test_test_get_uploaded_file(self):
+		path = upload_path("test.txt")
+		with open(path, "wb") as f:
+			f.write(b"File contents")
+		
+		response = self.client.get("/uploads/test.txt")
+		
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.mimetype, "text/plain")
+		self.assertEqual(response.data, b"File contents")
