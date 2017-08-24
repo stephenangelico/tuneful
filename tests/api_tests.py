@@ -130,3 +130,23 @@ class TestAPI(unittest.TestCase):
 		data = json.loads(response.data.decode("ascii"))
 		self.assertEqual(data["message"], "Song #1 updated")
 	
+	def test_delete_song(self):
+		""" Remove a song from the database """
+		testfile = File(name="chords.wav")
+		newsong = Song(file_id=testfile.id)
+		session.add_all([testfile, newsong])
+		session.commit()
+		
+		data = {"id": newsong.id}
+		response = self.client.delete("/api/songs",
+			data=json.dumps(data),
+			content_type="application/json",
+			headers=[("Accept", "application/json")]
+		)
+		
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.mimetype, "application/json")
+		
+		data = json.loads(response.data.decode("ascii"))
+		self.assertEqual(data["message"], "Song #1 deleted")
+	
