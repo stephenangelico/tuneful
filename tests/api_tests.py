@@ -105,3 +105,28 @@ class TestAPI(unittest.TestCase):
 		data = json.loads(response.data.decode("ascii"))
 		self.assertEqual(data["message"], "'id' is a required property")
 	
+	def test_update_song_name(self):
+		""" Rename a song """
+		testfile = File(name="chords.wav")
+		testfile2 = File(name="blah.flac")
+		newsong = Song(file_id=testfile.id)
+		session.add_all([testfile, testfile2, newsong])
+		session.commit()
+		
+		data = {
+			"id": newsong.id,
+			"file": {"id": testfile2.id}
+		}
+		
+		response = self.client.put("/api/songs",
+			data=json.dumps(data),
+			content_type="application/json",
+			headers=[("Accept", "application/json")]
+		)
+		
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.mimetype, "application/json")
+		
+		data = json.loads(response.data.decode("ascii"))
+		self.assertEqual(data["message"], "Song #1 updated")
+	
