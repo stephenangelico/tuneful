@@ -3,6 +3,8 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Sequence, ForeignKey
 
+from flask import url_for
+
 from . import app
 
 engine = create_engine(app.config["DATABASE_URI"])
@@ -37,7 +39,8 @@ class File(Base):
 	def as_dictionary(self):
 		file = {
 			"id": self.id,
-			"name": self.name
+			"name": self.name,
+			"path": url_for("uploaded_file", filename=self.name)
 			}
 		return file
 

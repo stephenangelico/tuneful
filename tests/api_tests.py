@@ -4,7 +4,7 @@ import shutil
 import json
 try: from urllib.parse import urlparse
 except ImportError: from urlparse import urlparse # Py2 compatibility
-from io import StringIO
+from io import StringIO, BytesIO
 
 import sys; print(list(sys.modules.keys()))
 # Configure our app to use the testing databse
@@ -160,3 +160,26 @@ class TestAPI(unittest.TestCase):
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response.mimetype, "text/plain")
 		self.assertEqual(response.data, b"File contents")
+	
+	def test_file_upload(self):
+		data = {
+			"file": (BytesIO(b"File contents"), "test.txt")
+		}
+		
+		response = self.client.post("/api/files",
+			data=data,
+			content_type="multipart/form-data",
+			headers=[("Accept", "application/json")]
+		)
+		
+		self.assertEqual(response.status_code, 201)
+		self.assertEqual(response.mimetype, "application/json")
+		
+		data = json.loads(response.data.decode("ascii"))
+		self.assertEqual(urlparse(data["path"]).path, "/uploads/test.txt")
+		
+		path = upload_path("test.txt")
+		self.assertTrue(os.path.isfile(path))
+		with open(path, "rb") as f:
+			contents = f.read()
+		self.assertEqual(contents, b"File contents")
